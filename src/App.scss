@@ -1,0 +1,60 @@
+@import "./scss/bootstrap";
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; 
+  min-height: 100vh;
+  .todoApp {
+    border-radius: 25px;
+    background-color: #85ffbd;
+    background-image: linear-gradient(45deg, #85ffbd 0%, #fffb7d 100%);
+    min-height: fit-content;
+    min-width: 500px;
+    h6 {
+      text-align: center;
+      color: #534d41;
+    }
+    h2 {
+      margin-left: 5px;
+      color: #534d41;
+    }
+  }
+  .todo {
+    background: #0f2027; /* fallback for old browsers */
+    background: -webkit-linear-gradient(to right, #2c5364, #203a43, #0f2027); /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(
+      to right,
+      #2c5364,
+      #203a43,
+      #0f2027
+    ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+    margin: 15px;
+    border-radius: 15px;
+    border: 1px solid black;
+    max-width: 490px;
+    h2 {
+      color: white;
+      text-align: center;
+    }
+    p {
+      color: white;
+      overflow: hidden;
+      white-space: wrap;
+      text-overflow: ellipsis;
+      padding-left: 10px;
+    }
+    .buttons {
+      padding-left: 10px;
+      margin-bottom: 10px;
+    }
+    button {
+      border: none;
+      background: none;
+    }
+  }
+}
+#textAreae {
+  margin-top: 10px;
+}
