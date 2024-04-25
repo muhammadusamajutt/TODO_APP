@@ -13,23 +13,42 @@ function App() {
   const [decpriction, setDecpriction] = useState();
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [todos, setTodos] = useState([]);
-  const [editingTodo, setEditingTodo] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState('');
 
   const handleOk = async (e) => {
     e.preventDefault();
+    setIsModalOpen(false);
     if (title !== "" && decpriction !== "") {
-      const todo = {
-        title,
-        decpriction,
-        id: Math.random().toString(36).substr(2, 9), // Generate random ID
-        createdAt: serverTimestamp() // Add current timestamp
-      };
-      await addDoc(collection(db, "todos"), todo);
-      setTitle("");
-      setDecpriction("");
-      setIsModalOpen(false);
+      if (isEditing) {
+        try {
+          await updateDoc(doc(db, "todos", editId), { title, decpriction });
+        } catch (error) {
+          console.error("Error updating document: ", error);
+        }
+      } else {
+        const todo = {
+          title,
+          decpriction,
+          id: Math.random().toString(36).substr(2, 9), // Generate random ID
+          createdAt: serverTimestamp() // Add current timestamp
+        };
+        await addDoc(collection(db, "todos"), todo);
+      }
+      setTitle('');
+      setDecpriction('');
+      setEditId('');
+      setIsEditing(false);
     }
   };
+  const handleEdit = (todo) => {
+    showModal(true);
+    setIsEditing(true);
+    setTitle(todo.title);
+    setDecpriction(todo.decpriction);
+    setEditId(todo.id);
+  };
+
   // output
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "todos"), (snapshot) => {
@@ -46,29 +65,6 @@ function App() {
       console.error("Error deleting document: ", error);
     }
   };
-  // edit
-  const handleEdit = (todo) => {
-    setIsModalOpen(true);
-    setTitle(todo.title);
-    setDecpriction(todo.decpriction);
-    setEditingTodo(todo);
-    showModal();
-  };
-
-  const updateTodo = async () => {
-    try {
-      const todoRef = doc(db, "todos", editingTodo.id);
-      await updateDoc(todoRef, {
-        title,
-        decpriction
-      });
-      setEditingTodo(null); // Reset editingTodo state
-    } catch (error) {
-      console.error("Error updating document: ", error);
-    }
-    setIsModalOpen(false);
-  };
-
   useEffect(() => {
     const intervalId = setInterval(() => {
       setCurrentDateTime(new Date());
@@ -87,17 +83,14 @@ function App() {
   };
   const handleCancel = () => {
     setIsModalOpen(false);
+    setIsEditing(false);
+    setTitle('');
+    setDecpriction('');
+    setEditId('');
   };
 
   return (
     <>
-      {/* <div>
-      <h1>Date: {formatDate(currentDateTime)}</h1>
-      <h2>Day: {currentDateTime.toLocaleDateString('en-US', { weekday: 'long' })}</h2>
-      <h2>Month: {currentDateTime.toLocaleDateString('en-US', { month: 'long' })}</h2>
-      <h2>Year: {currentDateTime.getFullYear()}</h2>
-      <h2>Time: {currentDateTime.toLocaleTimeString()}</h2>
-    </div> */}
       <main>
         <div>
           <div className="col">
@@ -116,7 +109,7 @@ function App() {
                       </div>
                       <div className="buttons">
                         <button onClick={() => handleDelete(todo.id)}><DeleteFilled style={{ fontSize: '24px', color: 'red' }} /></button>
-                        <button><EditFilled onClick={() => handleEdit(todo)} style={{ fontSize: '24px', color: 'blue' }} /></button>
+                        <button onClick={() => handleEdit(todo)}><EditFilled style={{ fontSize: '24px', color: 'blue' }} /></button>
                       </div>
                     </div>
                   ))}
@@ -126,13 +119,11 @@ function App() {
           </div>
         </div>
       </main>
-      <Modal title="Basic Modal" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
-        <Input value={title} onChange={(e) => { setTitle(e.target.value) }} size="large" placeholder="TITLE" />
-        <TextArea value={decpriction} onChange={(e) => { setDecpriction(e.target.value) }} id='textAreae' margin-top="10px" rows={4} placeholder="DECRIPTION" />
-      </Modal>
-      <Modal title="Basic Modal" open={isModalOpen} onOk={updateTodo} onCancel={handleCancel}>
-        <Input value={title} onChange={(e) => { setTitle(e.target.value) }} size="large" placeholder="TITLE" />
-        <TextArea value={decpriction} onChange={(e) => { setDecpriction(e.target.value) }} id='textAreae' margin-top="10px" rows={4} placeholder="DECRIPTION" />
+      <Modal title={isEditing ? "Edit Todo" : "Add Todo"} visible={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
+        <form action="">
+          <Input value={title} onChange={(e) => { setTitle(e.target.value) }} size="large" placeholder="TITLE" />
+          <TextArea value={decpriction} onChange={(e) => { setDecpriction(e.target.value) }} id='textAreae' margin-top="10px" rows={4} placeholder="DECRIPTION" />
+        </form>
       </Modal>
     </>
   );
